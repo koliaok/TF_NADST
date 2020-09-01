@@ -6,8 +6,6 @@ from model.run_training import run_epoch
 from model.evaluator import Evaluator
 
 import tensorflow as tf
-import pdb
-import os
 import os.path
 import pickle as pkl
 import logging
@@ -80,11 +78,6 @@ nb_tokens, state_out, evaluation_variable = nadst.model(xs=xs, ys=ys, src_lang=s
                                                         domain_lang=domain_lang, slot_lang=slot_lang,
                                                         len_val=max_len_val, args=args, training=True)
 
-eval_total_loss, eval_train_op, eval_global_step, eval_train_summaries, eval_losses,\
-eval_nb_tokens, eval_state_out, eval_evaluation_variable = nadst.model(xs=xs, ys=ys, src_lang=src_lang,
-                                                        domain_lang=domain_lang, slot_lang=slot_lang,
-                                                        len_val=max_len_val, args=args, training=False)
-
 
 
 logging.info("# Load model complete")
@@ -117,27 +110,17 @@ with tf.compat.v1.Session() as sess:
     run_operation = (train_init_op, eval_init_op)
 
     for ep in range(epoch):
-
         _gs = run_epoch(ep, total_loss, state_out, train_op, global_step, train_summaries, losses, nb_tokens,
                         sess, src_lang, train_num_batches, summary_writer, args, evaluation_variable=evaluation_variable, is_eval=False)
 
-        modelfile = args['save_path'] + '/nadst_model_epoch{}'.format(ep + 1)
-        if ((ep + 1) % int(args['evalp']) == 0):
-        #if True:
+        model_file = args['save_path'] + '/nadst_model_epoch{}'.format(ep + 1)
+
+        if (ep + 1) % int(args['evalp']) == 0:
             _ = sess.run(eval_init_op)
             dev_loss, dev_acc, dev_joint_acc = run_epoch(ep, total_loss, state_out, train_op, global_step, train_summaries,
                                                           losses, nb_tokens, sess, src_lang, eval_num_batches, summary_writer,
                                                           args, domain_lang=domain_lang, slot_lang=slot_lang, evaluation_variable=evaluation_variable,
                                                          evaluator=evaluator, is_eval=True)
-
-
-            """
-            dev_loss, dev_acc, dev_joint_acc = run_epoch(ep, eval_total_loss, eval_state_out, eval_train_op, eval_global_step, eval_train_summaries,
-                                                         eval_losses, eval_nb_tokens, sess, src_lang, eval_num_batches,
-                                                         summary_writer, args, domain_lang=domain_lang, slot_lang=slot_lang,
-                                                         evaluation_variable=eval_evaluation_variable,
-                                                         evaluator=evaluator, is_eval=True)
-            """
 
             print('deve loss is {}'.format(dev_acc))
             if args['eval_metric'] == 'acc':
@@ -148,8 +131,8 @@ with tf.compat.v1.Session() as sess:
                 check = (dev_loss < min_dev_loss)
             if check:
                 logging.info("# save models")
-                saver.save(sess, modelfile)
-                logging.info("after training of {} epochs, {} has been saved.".format(epoch, modelfile))
+                #saver.save(sess, model_file)
+                logging.info("after training of {} epochs, {} has been saved.".format(epoch, model_file))
                 cnt = 0
                 best_model_id = ep + 1
                 print('Dev loss changes from {} --> {}'.format(min_dev_loss, dev_loss))
@@ -160,7 +143,7 @@ with tf.compat.v1.Session() as sess:
                 max_dev_slot_acc = dev_joint_acc
             else:
                 cnt += 1
-            if (cnt == args["patience"]):
+            if cnt == args["patience"]:
                 print("Ran out of patient, early stop...")
                 break
             sess.run(train_init_op)

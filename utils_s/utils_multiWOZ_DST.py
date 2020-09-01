@@ -347,9 +347,26 @@ def get_eager_tensor_dataset(total_data_info, batch_size, slot_gating):
 
     return xs, ys
 
+def get_tensor_test(total_data_info, batch_size, slot_gating):
+    end = 10  # len(total_data_info['ID'])
+    context = total_data_info['context'][:end]
+    delex_context = total_data_info['delex_context'][:end]
+    sorted_in_domains = total_data_info['sorted_in_domains'][:end]
+    sorted_in_slots = total_data_info['sorted_in_slots'][:end]
+    sorted_in_slots2 = total_data_info['sorted_in_slots2'][:end]
+    sorted_in_domains2 = total_data_info['sorted_in_domains2'][:end]
+    sorted_lenval = total_data_info['sorted_lenval'][:end]
+    sorted_generate_y = total_data_info['sorted_generate_y'][:end]
+    if slot_gating:
+        sorted_gates = total_data_info["sorted_gates"][:end]
+
+    num_batches = calc_num_batches(len(context), batch_size)
+    return None, num_batches, len(context)
+
 
 def get_tensor_dataset(total_data_info, batch_size, slot_gating, shuffle):
-    end = 100#len(total_data_info['ID'])
+
+    end = 500#len(total_data_info['ID'])
     ID = total_data_info['ID'][:end]
     turn_id = total_data_info['turn_id'][:end]
     context = total_data_info['context'][:end]

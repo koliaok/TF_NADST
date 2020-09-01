@@ -32,8 +32,6 @@ def run_epoch(ep, total_loss, state_out, train_op, global_step, train_summaries,
         predictions = {}
 
     for i in tqdm(range(0, num_batches)):
-
-
         _, _gs, _summary, _losses, _nb_tokens, _state_out, _evaluation_variable = sess.run([train_op,
                                                                                            global_step,
                                                                                            train_summaries,
@@ -42,8 +40,6 @@ def run_epoch(ep, total_loss, state_out, train_op, global_step, train_summaries,
                                                                                            state_out,
                                                                                            evaluation_variable])
         summary_writer.add_summary(_summary, _gs)
-
-
 
         if is_eval:
             matches, predictions = predict(_state_out, _evaluation_variable, predict_lang, domain_lang, slot_lang, predictions, True, src_lang, args)
