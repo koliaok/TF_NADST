@@ -15,7 +15,7 @@ If you not poetry framework, first install poetry
 ```
 pip install poetry
 ```
-environment setup -> TF_NADST_v1 Folder 
+environment setup -> TF_NADST Folder 
 ```
 poetry install
 poetry shell
@@ -23,7 +23,7 @@ poetry shell
 
 ## Dataset Download
 MultiWOZ benchmark, including both version 2.0 ([Link](https://drive.google.com/drive/folders/1_DxHCT78LcLw08sss-F_vIwkgH6q1HmK?usp=sharing)) and 2.1 ([Link](https://drive.google.com/drive/folders/1qOZIBauQiqbMC7VB-KTVSkH_F-KAE6wm?usp=sharing)).
-Download the data and unzip into the root directory of the repo e.g. `TF_NADST_v1/data2.0` and `TF_NADST_v1/data2.1`.
+Download the data and unzip into the root directory of the repo e.g. `TF_NADST/data2.0` and `TF_NADST/data2.1`.
 
 ## Scripts 
 
