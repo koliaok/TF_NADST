@@ -124,6 +124,10 @@ class Dataset():
         return y_in, y_out
 
 def collate_fn(data, batch_size):
+    """
+    data preprocessing
+    return dict type data
+    """
     def transfer_data_info_type(data_out):
         data_info = {}
         data_keys = data_out[0].keys()

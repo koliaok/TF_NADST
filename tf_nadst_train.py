@@ -12,6 +12,7 @@ import logging
 
 EAGER_EXCUTION = False
 
+# Eager Excution mode setup
 if EAGER_EXCUTION:
     tf.compat.v1.enable_eager_execution()
 else:
@@ -20,17 +21,20 @@ else:
 epoch = 200
 logging.basicConfig(level=logging.INFO)
 
+#For test setup
 cnt = 0.0
 min_dev_loss = float("Inf")
 max_dev_acc = -float("Inf")
 max_dev_slot_acc = -float("Inf")
 
+#Path and Save_path set up
 if not os.path.exists(args['path']):
     os.makedirs(args['path'])
 if not os.path.exists(args['save_path']):
     os.makedirs(args['save_path'])
 
 if not os.path.exists(args['path']+'/data.pkl'):
+    # Data preprocessing
     src_lang, tgt_lang, domain_lang, slot_lang, SLOTS_LIST, max_len_val, data_info_dic = prepare_data_seq(True, args)
 
     save_data = {
@@ -62,7 +66,7 @@ eval_batch = args["eval_batch"] if args["eval_batch"] else args["batch"]
 if EAGER_EXCUTION:
     xs, ys = get_eager_tensor_dataset(data_info_dic["train"], args['batch'], args['slot_gating'])
 
-else:
+else:#Make Tensorflow dataset
     train_dataset, train_num_batches, train_num_sample = get_tensor_dataset(data_info_dic["train"], args['batch'], args['slot_gating'], True)
     eval_dataset, eval_num_batches, eval_num_sample = get_tensor_dataset(data_info_dic["dev"], eval_batch, args['slot_gating'], False)
 
@@ -72,7 +76,7 @@ else:
     train_init_op = iter.make_initializer(train_dataset)
     eval_init_op = iter.make_initializer(eval_dataset)
 
-nadst = NADST()
+nadst = NADST() # Make NADST model class
 total_loss, train_op, global_step, train_summaries, losses,\
 nb_tokens, state_out, evaluation_variable = nadst.model(xs=xs, ys=ys, src_lang=src_lang,
                                                         domain_lang=domain_lang, slot_lang=slot_lang,

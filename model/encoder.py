@@ -7,6 +7,9 @@ import numpy as np
 class Encoder(object):
 
     def __init__(self, fertility_slot_embedding, state_slot_embedding, context_embedding, delex_embedding):
+        """
+        Basic Encoder
+        """
         self.fertility_slot_domain_embedding = fertility_slot_embedding
         self.state_slot_domain_embedding = state_slot_embedding
         self.context_embedding = context_embedding
@@ -15,7 +18,7 @@ class Encoder(object):
 
     def get_encoding(self, decoder_type):
         if decoder_type == 'fertility':
-            slot_domain_embedding = LayerNorm(self.fertility_slot_domain_embedding, scope="slot_domain_embedding_norm").get_layer_norm()
+            slot_domain_embedding = LayerNorm(self.fertility_slot_domain_embedding, scope="slot_domain_embedding_norm").get_layer_norm() #
             context_embedding = LayerNorm(self.context_embedding, scope="context_embedding_norm").get_layer_norm()
             delex_embedding = LayerNorm(self.delex_embedding, scope="delex_embedding_norm").get_layer_norm()
             return slot_domain_embedding, context_embedding, delex_embedding
@@ -47,11 +50,10 @@ class Embedding():
 
 class PositionalEncoding():
 
-    def __init__(self, inputs,
-                        maxlen,
-                        dropout_rat,
-                        masking=True,
-                 training=True):
+    def __init__(self, inputs, maxlen, dropout_rat, masking=True, training=True):
+        """
+        Position Encoding
+        """
 
         E = inputs.get_shape().as_list()[-1]
         N, T = tf.shape(inputs)[0], tf.shape(inputs)[1]# dynamic

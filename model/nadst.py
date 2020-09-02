@@ -10,6 +10,9 @@ import tensorflow as tf
 
 class NADST():
     def __init__(self, sess=None):
+        """
+        For Test Placeholder Setup
+        """
         if sess is not None:
             self.sess = sess
             self.contexts = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, None], name="context")
@@ -86,14 +89,16 @@ class NADST():
 
 
     def model(self, xs, ys, src_lang, domain_lang, slot_lang, len_val, args, training=True):
-        if args['slot_gating']:
-            ids, turn_ids, contexts, delex_context_plains, delex_contexts, context_plains, sorted_in_domainss, turn_beliefs = xs
+        """
+        NADST Model Setup
+        """
+        # Basic Data
+        ids, turn_ids, contexts, delex_context_plains, delex_contexts, context_plains, sorted_in_domainss, turn_beliefs = xs
 
+        if args['slot_gating']:
             sorted_in_domains2s, sorted_in_slotss, sorted_in_slots2s, sorted_lenvals, sorted_generate_ys, context_masks, \
             delex_context_masks, sorted_in_domainslots_masks, sorted_gates = ys
         else:
-            ids, turn_ids, contexts, delex_context_plains, delex_contexts, context_plains, sorted_in_domainss, turn_beliefs = xs
-
             sorted_in_domains2s, sorted_in_slotss, sorted_in_slots2s, sorted_lenvals, sorted_generate_ys, context_masks, \
             delex_context_masks, sorted_in_domainslots_masks = ys
             sorted_gates = False
@@ -102,6 +107,7 @@ class NADST():
         slot_vocab = slot_lang.n_words
         domain_vocab = domain_lang.n_words
         with tf.compat.v1.variable_scope('nadst', reuse=tf.compat.v1.AUTO_REUSE):
+            # basic embedding setup
             fertility_in_domainslots, state_in_domainslots,\
             delex_embedding, contexts_embedding, text_embedding = self.get_embedding(args,
                                                                                      src_vocab,
@@ -114,20 +120,20 @@ class NADST():
                                                                                      sorted_in_domains2s,
                                                                                      sorted_in_slots2s,
                                                                                      training=training)
-
+            # encoder setup
             encoder = Encoder(fertility_slot_embedding=fertility_in_domainslots, state_slot_embedding=state_in_domainslots,
                               delex_embedding=delex_embedding, context_embedding=contexts_embedding)
-
+            # Basic Generator setup (Fertility, Gate, State)
             self.fertility_generator, self.point_state_generator, gate_gen = self.get_generators(len_val, src_vocab, text_embedding, args)
-
+            # Mask data Setup
             delex_context_masks_, sorted_in_domainslots_masks_, context_masks_, src_masks_ = self.get_masks(delex_contexts, sorted_in_domains2s, contexts)
 
-
+            # Make Fertility, State Decoder
             self.calculation_NADST(encoder=encoder, context_mask=context_masks_, delex_context_masks=delex_context_masks_,
                                    sorted_in_domainslots_masks=sorted_in_domainslots_masks_, args=args,
                                    fertility_generator=self.fertility_generator, state_generator=self.point_state_generator,
                                    src_masks=src_masks_, gate_gen=gate_gen, training=training)
-
+            # Compute Loss Function from 2 Decoder
             total_loss, train_op, global_step, summaries, losses, \
             nb_tokens, state_out, lenval_out_from_gen,\
             state_out_from_gen, gate_out_from_gen = self.compute_loss(sorted_lenvals, sorted_gates,
@@ -137,6 +143,7 @@ class NADST():
                                                   args['warmup'],
                                                   gate_gen,
                                                   )
+
             evaluation_variable = {'sorted_lenval': sorted_lenvals, 'sorted_generate_y': sorted_generate_ys,
                                    'sorted_in_domains2': sorted_in_domains2s, 'sorted_in_slots2': sorted_in_slots2s,
                                    'lenval_out': lenval_out_from_gen, 'state_out': state_out_from_gen,
@@ -157,6 +164,9 @@ class NADST():
 
     def calculation_NADST(self, encoder, context_mask, delex_context_masks, sorted_in_domainslots_masks,
                           args, fertility_generator, state_generator, src_masks, gate_gen=None, training=True):
+        """
+        Non Autoregressive 2 Decoder(Fertility, State) for basic Transformer(https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
+        """
 
         self.args = args
 
@@ -169,6 +179,9 @@ class NADST():
 
 
     def compute_loss(self, sorted_lenval, sorted_gates, contexts, context_masks, sorted_generate_y, d_model, factor, warmup, gate_gen):
+        """
+        3 generator(Gate, Fertility, State) loss function
+        """
         with tf.compat.v1.variable_scope('comput_loss', reuse=tf.compat.v1.AUTO_REUSE):
             total_loss = 0
             gate_out_loss = tf.compat.v1.constant(0)
@@ -209,7 +222,6 @@ class NADST():
             one_hot_state_y = label_smoothing(tf.compat.v1.reshape(tf.compat.v1.one_hot(sorted_generate_y, depth=state_out_size),
                                                                    shape=[-1, state_out_size]))
             state_logits = tf.compat.v1.reshape(self.gen_state_out, shape=[-1, state_out_size])
-
             learning_sum = -tf.compat.v1.reduce_sum(one_hot_state_y * state_logits, axis=-1)
             state_loss = tf.compat.v1.reduce_sum(learning_sum)
 
@@ -239,7 +251,6 @@ class NADST():
             tf.compat.v1.summary.scalar("global_step", global_step)
             summaries = tf.compat.v1.summary.merge_all()
 
-
         return total_loss, train_op, global_step, summaries, losses, nb_tokens, self.state_out, lenval_out, self.gen_state_out, gate_out
 
 
@@ -249,6 +260,9 @@ class NADST():
 
     def get_embedding(self, args, src_vocab, contexts, delex_contexts, domain_vocab, sorted_in_domainss, slot_vocab,
                       sorted_in_slotss, sorted_in_domains2s, sorted_in_slots2s, training=True):
+        """
+        embedding context, delex_context, fertility, state (4)
+        """
         # context encoding
         text_embedding = Embedding(args['d_model'], src_vocab, contexts, 'text_embedding')
         contexts_embedding = text_embedding.get_embedding()
@@ -294,6 +308,9 @@ class NADST():
         delex_embedding, contexts_embedding, text_embedding
 
     def get_generators(self, len_val, src_vocab, text_embedding, args):
+        """
+        Generator Function Gate, Fertility, State
+        """
         gate_gen = None
         if args['slot_gating']:
             gate_gen = Generator(len(GATES), scope_name="gate")
@@ -304,6 +321,9 @@ class NADST():
         return fertility_generator, point_state_generator, gate_gen
 
     def get_masks(self, delex_contexts, sorted_in_domains2s, contexts):
+        """
+        make mask Data
+        """
 
         delex_context_masks_ = tf.compat.v1.math.equal(delex_contexts, 1)
         sorted_in_domainslots_masks_ = tf.compat.v1.math.equal(sorted_in_domains2s, 1)

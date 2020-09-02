@@ -146,12 +146,15 @@ def get_atrg_generate_y(sorted_domainslots, sorted_lenval_ls, turn_belief_dict):
 
 
 def read_langs(file_name, SLOTS, dataset, lang, mem_lang, training, args):
+    """
+    initial data preprocessing
+    return training, dev, test
+    """
     print(("Reading from {}".format(file_name)))
     data = []
     max_len_val_per_slot = 0
     max_len_slot_val = {}
     domain_counter = {}
-    # count_noise = 0
     sorted_domainslots = sorted(SLOTS)
     sorted_in_domains = [i.split('-')[0] + "_DOMAIN" for i in sorted_domainslots]
     sorted_in_slots = [i.split('-')[1] + "_SLOT" for i in sorted_domainslots]
@@ -268,7 +271,6 @@ def read_langs(file_name, SLOTS, dataset, lang, mem_lang, training, args):
 def data_reprocessing(dataset, batch_size):
     data = [dataset[i] for i in range(len(dataset))]
     last_out = collate_fn(data, batch_size)
-    #out_data = transfer_data_info_type(last_out)
     return last_out
 
 
@@ -365,8 +367,10 @@ def get_tensor_test(total_data_info, batch_size, slot_gating):
 
 
 def get_tensor_dataset(total_data_info, batch_size, slot_gating, shuffle):
-
-    end = 500#len(total_data_info['ID'])
+    """
+    Make Tensorflow dataset
+    """
+    end = len(total_data_info['ID'])
     ID = total_data_info['ID'][:end]
     turn_id = total_data_info['turn_id'][:end]
     context = total_data_info['context'][:end]
@@ -431,6 +435,10 @@ def get_tensor_dataset(total_data_info, batch_size, slot_gating, shuffle):
 
 
 def get_seq(pairs, lang, mem_lang, domain_lang, slot_lang, args, split, batch_size, ALL_SLOTS):
+    """
+    make data processing
+    return total preprocessing data
+    """
     data_info = {}
     data_keys = pairs[0].keys()
     for k in data_keys:
@@ -440,7 +448,7 @@ def get_seq(pairs, lang, mem_lang, domain_lang, slot_lang, args, split, batch_si
         for k in data_keys:
             data_info[k].append(pair[k])
 
-    dataset = Dataset(data_info, lang, mem_lang, domain_lang, slot_lang, args, split, ALL_SLOTS)
+    dataset = Dataset(data_info, lang, mem_lang, domain_lang, slot_lang, args, split, ALL_SLOTS) #Make Dataset class
     total_data_info = data_reprocessing(dataset, batch_size)
     return total_data_info
 
@@ -468,12 +476,15 @@ def merge_lang(lang, max_freq):
 
 
 def prepare_data_seq(training, args):
-    batch_size = args['batch']
+    """
+    preprocessing function
+    return training data
+    """
     file_train = 'data{}/nadst_train_dials.json'.format(args['data_version'])
     file_dev = 'data{}/nadst_dev_dials.json'.format(args['data_version'])
     file_test = 'data{}/nadst_test_dials.json'.format(args['data_version'])
     ontology = json.load(open("data2.0/multi-woz/MULTIWOZ2 2/ontology.json", 'r'))
-    ALL_SLOTS, ALL_DOMAINS = get_slot_information(ontology)
+    ALL_SLOTS, ALL_DOMAINS = get_slot_information(ontology) # json file extract slot and domain
     lang, mem_lang = Lang(), Lang()
     domain_lang, slot_lang = Lang(), Lang()
     lang.index_words(ALL_SLOTS, 'slot')
@@ -483,7 +494,7 @@ def prepare_data_seq(training, args):
     domain_lang.index_words(ALL_SLOTS, 'domain_only')
     slot_lang.index_words(ALL_SLOTS, 'slot_only')
 
-    if training:
+    if training: # Data preprocessing
         pair_train, slot_train, train_max_len_val, train_max_len_slot_val = read_langs(file_train, ALL_SLOTS, "train",
                                                                                        lang, mem_lang, training, args)
         pair_dev, slot_dev, dev_max_len_val, dev_max_len_slot_val = read_langs(file_dev, ALL_SLOTS, "dev", lang,
