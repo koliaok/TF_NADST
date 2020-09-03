@@ -31,6 +31,9 @@ class Encoder(object):
 
 class Embedding():
     def __init__(self, d_model, vocab, x, name):
+        """
+        Tensorflow word embedding code
+        """
         with tf.compat.v1.variable_scope(name+'_scope', reuse=tf.compat.v1.AUTO_REUSE):
             self.embeddings = tf.compat.v1.get_variable(name,
                                                        dtype=tf.float32,
@@ -39,12 +42,15 @@ class Embedding():
                                                         )
 
             self.enc = tf.compat.v1.nn.embedding_lookup(self.embeddings, x)
-            self.enc *= d_model ** 0.5
+            self.enc *= d_model ** 0.5 #Nomalize
 
     def get_embedding(self):
         return self.enc
 
     def get_embedding_wieght(self):
+        """
+        For use point generator
+        """
         return self.embeddings
 
 

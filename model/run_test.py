@@ -26,7 +26,7 @@ def make_test_data_set(start, end, test_data_info, model=None, slot_gating=None)
     }
     feed_dict = make_feed_dict(model, test_data)
     if slot_gating:
-        feed_dict[model.model.sorted_gates] = test_data_info["sorted_gates"][start:end]
+        feed_dict[model.sorted_gates] = test_data_info["sorted_gates"][start:end]
     return test_data, feed_dict
 
 def make_feed_dict(model, test_data):

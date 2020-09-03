@@ -30,9 +30,9 @@ class NADST():
 
     def test_model(self, src_lang, domain_lang, slot_lang, len_val, args, training=True):
         if args['slot_gating']:
-            sorted_gates = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, None], name="sorted_gate")
+            self.sorted_gates = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, None], name="sorted_gate")
         else:
-            sorted_gates = False
+            self.sorted_gates = False
 
         src_vocab = src_lang.n_words
         slot_vocab = slot_lang.n_words
@@ -68,7 +68,7 @@ class NADST():
 
             self.total_loss, self.train_op, self.global_step, self.summaries, self.losses, \
             self.nb_tokens, self.state_out, self.lenval_out_from_gen,\
-            self.state_out_from_gen, self.gate_out_from_gen = self.compute_loss(self.sorted_lenvals, sorted_gates,
+            self.state_out_from_gen, self.gate_out_from_gen = self.compute_loss(self.sorted_lenvals, self.sorted_gates,
                                                                                   self.contexts, self.context_masks_,
                                                                                   self.sorted_generate_ys,
                                                                                   args['d_model'], 1,
@@ -83,7 +83,7 @@ class NADST():
                                         }
 
             if gate_gen is not None:
-                self.evaluation_variable['sorted_gates']= sorted_gates
+                self.evaluation_variable['sorted_gates']= self.sorted_gates
 
         return self.total_loss, self.train_op, self.global_step, self.summaries, self.losses, self.nb_tokens, self.state_out, self.evaluation_variable
 

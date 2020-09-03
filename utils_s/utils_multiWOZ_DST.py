@@ -87,8 +87,6 @@ def get_sorted_lenval(sorted_domainslots, turn_belief_dict, slot_gating):
     for k, v in turn_belief_dict.items():
         index = sorted_domainslots.index(k)
         lenval = len(v.split())
-        if lenval >= 9:
-            print('as')
         if not slot_gating or (slot_gating and v not in ['dontcare', 'none']):
             sorted_lenval[index] = lenval
         if slot_gating:

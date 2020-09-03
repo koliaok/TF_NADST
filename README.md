@@ -33,19 +33,33 @@ You can directly run this file which includes example parameter setting:
 If you run, download [my pretraining code](https://drive.google.com/drive/folders/1cHB_mrNgJKwsu3rA9956ayGOzu_EgqZb?usp=sharing)
 end you change `-save_path=` argument e.g. `-save_path=save/pretraing_nadst/[downloaded model]`. 
 
-## Pytorch No Gate NADST Experiment Result
+## Pytorch Original NADST Experiment Result
 
-|                                 | Joint Acc | Slot Acc | F1     |
+| No Gate                         | Joint Acc | Slot Acc | F1     |
 | ------------------------------- | --------- | -------- | ------ |
 | Use predicted fertility/no gate | 48.25%    | 97.24%   | 0.8858 |
 | Use oracle fertility/no gate    | 70.64%    | 94.58%   | 0.9886 |
 
-## Tensorflow No Gate NADST Experiment Result
 
-|                                 | Joint Acc | Slot Acc | F1     |
+| Gate                            | Joint Acc | Slot Acc | F1     |
+| ------------------------------- | --------- | -------- | ------ |
+| Use predicted fertility/gate    | 48.25%    | 97.24%   | 0.8858 |
+| Use oracle fertility/gate       | 70.64%    | 98.86%   | 0.9459 |
+
+
+## Our Tensorflow NADST Experiment Result
+
+| No Gate                         | Joint Acc | Slot Acc | F1     |
 | ------------------------------- | --------- | -------- | ------ |
 | Use predicted fertility/no gate | 44.14%    | 96.88%   | 0.8520 |
 | Use oracle fertility/no gate    | 60.13%    | 90.19%   | 0.9810 |
+
+
+| Gate                            | Joint Acc | Slot Acc | F1     |
+| ------------------------------- | --------- | -------- | ------ |
+| Use predicted fertility/gate    | 42.14%    | 96.70%   | 0.8456 |
+| Use oracle fertility/gate       | 58.23%    | 90.04%   | 0.9794 |
+
 
 
 ## Training
